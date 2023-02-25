@@ -9,7 +9,7 @@ local default_config = {
 
 -- Merge two tables into a single table. `t1` overrides `t2`.
 -- Source: https://shanekrolikowski.com/blog/love2d-merge-tables/
-function merge_tbl(t1, t2)
+local function merge_tbl(t1, t2)
     for k, v in pairs(t2) do
         if type(v) == 'table' then
             t1[k] = merge_tbl(t1[k], t2[k])
