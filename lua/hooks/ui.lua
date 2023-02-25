@@ -10,7 +10,7 @@ local menu_bufnr = nil
 
 local function create_window()
     local config = h.get_config().menu
-    local bufnr = vim.api.nvim_create_buf(false, false)
+    local bufnr = vim.api.nvim_create_buf(false, true)
 
     local width = config.width
     local height = config.height
@@ -85,6 +85,13 @@ function M.toggle_menu()
     vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<CR>', '<Cmd>HooksSelectItem<CR>', {})
 
     -- autocommands
+    vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
+        callback = function()
+            M.on_menu_save()
+        end,
+        group = h.group,
+        buffer = menu_bufnr,
+    })
     vim.api.nvim_create_autocmd('BufModifiedSet', {
         command = 'set nomodified',
         group = h.group,
