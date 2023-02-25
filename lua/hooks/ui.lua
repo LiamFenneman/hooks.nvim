@@ -54,7 +54,7 @@ function M.on_menu_save()
 end
 
 function M.select_menu_item()
-    local idx = vim.fn.line(".")
+    local idx = vim.fn.line('.')
     close_menu()
     M.nav_file(idx)
 end

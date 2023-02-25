@@ -7,7 +7,7 @@ function M.normalise_path(filename)
 end
 
 function M.is_white_space(str)
-    return str:gsub("%s", "") == ""
+    return str:gsub('%s', '') == ''
 end
 
 return M
