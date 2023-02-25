@@ -35,7 +35,7 @@ local function create_project()
     }
 end
 
-local function save_projects()
+function M.save_projects()
     if state.projects ~= nil then
         -- create the folder if it doesn't exist
         if not path:new(folder_path):exists() then
@@ -48,8 +48,8 @@ local function save_projects()
 end
 
 local function load_projects()
-    -- if the config file doesn't exist, create it
-    if not path:new(projects_path):exists() then
+    -- if the projects file doesn't exist or is empty, create it
+    if (not path:new(projects_path):exists()) or (path:new(projects_path):read() == '') then
         -- init the projects table
         state.projects = {}
 
@@ -60,13 +60,27 @@ local function load_projects()
         }
 
         -- save projects to disk
-        save_projects()
+        M.save_projects()
         return
     end
 
     -- read and decode projects from disk
     state.projects = vim.fn.json_decode(path:new(projects_path):read())
-    print(vim.inspect(state.projects))
+
+    -- check if the current working directory has a project
+    local cwd = vim.fn.getcwd()
+    if state.projects[cwd] == nil then
+        local c = create_project()
+        state.projects[c.name] = {
+            marks = c.marks,
+        }
+        M.save_projects()
+    end
+end
+
+function M.get_current_project_marks()
+    local cwd = vim.fn.getcwd()
+    return state.projects[cwd].marks
 end
 
 -- Setup the config for the plugin
