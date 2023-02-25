@@ -1,6 +1,6 @@
 local popup = require('plenary.popup')
 local h = require('hooks')
-local hooks = require('hooks.marks')
+local marks = require('hooks.marks')
 local utils = require('hooks.utils')
 
 local M = {}
@@ -50,7 +50,7 @@ local function get_menu_items()
 end
 
 function M.on_menu_save()
-    hooks.set_hooks_list(get_menu_items())
+    marks.set_hooks_list(get_menu_items())
 end
 
 function M.select_menu_item()
