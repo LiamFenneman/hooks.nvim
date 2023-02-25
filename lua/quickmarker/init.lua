@@ -27,9 +27,9 @@ end
 
 -- Setup the config for the plugin
 function M.setup(cfg)
-    local cfg = cfg or {}
+    cfg = cfg or {}
     -- merge such that default config is overridden by the user-defined config
-    local cfg = merge_tbl(default_config, cfg)
+    cfg = merge_tbl(default_config, cfg)
     state.config = cfg
 end
 
@@ -46,7 +46,7 @@ local function create_window()
     local width = config.width
     local height = config.height
 
-    local id, win = popup.create(bufnr, {
+    local id = popup.create(bufnr, {
         title = 'QuickMarker',
         highlight = 'QuickMarkerWindow',
         line = math.floor(((vim.o.lines - height) / 2) - 1),
