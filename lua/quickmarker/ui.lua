@@ -1,5 +1,6 @@
 local popup = require('plenary.popup')
 local qm = require('quickmarker')
+local utils = require('quickmarker.utils')
 
 local M = {}
 

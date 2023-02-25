@@ -1,5 +1,6 @@
 local path = require('plenary.path')
 local qm = require('quickmarker')
+local utils = require('quickmarker.utils')
 
 local M = {}
 
@@ -26,7 +27,7 @@ end
 -- create a mark at the current cursor position and add it to the list of marks
 function M.add_file()
     -- get the filename relative to the project working directory
-    local filename = path:new(vim.api.nvim_buf_get_name(0)):make_relative(vim.fn.getcwd())
+    local filename = utils.normalise_path(vim.api.nvim_buf_get_name(0))
     local new_mark = create_mark(filename)
 
     -- if the mark exists, do nothing
