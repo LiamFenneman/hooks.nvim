@@ -1,4 +1,4 @@
-local h = require('hooks')
+local cfg = require('hooks.config')
 local utils = require('hooks.utils')
 
 local M = {}
@@ -14,7 +14,7 @@ local function create_hook(filename)
 end
 
 local function hook_exists(hook)
-    for _, m in ipairs(h.get_current_project_hooks()) do
+    for _, m in ipairs(cfg.get_current_project_hooks()) do
         if hook.filename == m.filename then
             return true
         end
@@ -35,16 +35,16 @@ function M.add_file()
     end
 
     -- add the new hook to the current project list
-    local hooks = h.get_current_project_hooks()
+    local hooks = cfg.get_current_project_hooks()
     local idx = table.maxn(hooks)
     hooks[idx + 1] = new_hook
 
     -- save the projects to disk
-    h.save_projects()
+    cfg.save_projects()
 end
 
 function M.set_hooks_list(new_hooks)
-    local hooks = h.get_current_project_hooks()
+    local hooks = cfg.get_current_project_hooks()
     -- loop over the new hooks, get the hook from the file or create a new hook
     -- update the new list inplace with the hook
     for k, v in pairs(new_hooks) do
@@ -58,7 +58,7 @@ function M.set_hooks_list(new_hooks)
     end
 
     -- set the project hooks to the new list
-    h.set_current_project_hooks(new_hooks)
+    cfg.set_current_project_hooks(new_hooks)
 end
 
 return M

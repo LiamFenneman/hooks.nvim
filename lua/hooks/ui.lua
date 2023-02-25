@@ -1,5 +1,5 @@
 local popup = require('plenary.popup')
-local h = require('hooks')
+local cfg = require('hooks.config')
 local marks = require('hooks.marks')
 local utils = require('hooks.utils')
 
@@ -9,7 +9,7 @@ local menu_id = nil
 local menu_bufnr = nil
 
 local function create_window()
-    local config = h.get_config().menu
+    local config = cfg.get_config().menu
     local bufnr = vim.api.nvim_create_buf(false, true)
 
     local width = config.width
@@ -68,7 +68,7 @@ function M.toggle_menu()
     create_window()
 
     local contents = {}
-    for i, hook in ipairs(h.get_current_project_hooks()) do
+    for i, hook in ipairs(cfg.get_current_project_hooks()) do
         contents[i] = string.format('%s', hook.filename)
     end
 
@@ -89,12 +89,12 @@ function M.toggle_menu()
         callback = function()
             M.on_menu_save()
         end,
-        group = h.group,
+        group = cfg.group,
         buffer = menu_bufnr,
     })
     vim.api.nvim_create_autocmd('BufModifiedSet', {
         command = 'set nomodified',
-        group = h.group,
+        group = cfg.group,
         buffer = menu_bufnr,
     })
     vim.api.nvim_create_autocmd('BufLeave', {
@@ -102,7 +102,7 @@ function M.toggle_menu()
             M.on_menu_save()
             M.toggle_menu()
         end,
-        group = h.group,
+        group = cfg.group,
         buffer = menu_bufnr,
         once = true,
         nested = true,
@@ -119,7 +119,7 @@ local function get_or_create_buffer(filename)
 end
 
 function M.nav_file(idx)
-    local hooks = h.get_current_project_hooks()
+    local hooks = cfg.get_current_project_hooks()
 
     -- ensure the index is within the hooks array bounds
     if idx > table.maxn(hooks) then
