@@ -29,11 +29,25 @@ local function create_window()
     menu_bufnr = bufnr
 end
 
+local function close_menu()
+    vim.api.nvim_win_close(menu_id, true)
+    menu_id = nil
+    menu_bufnr = nil
+end
+
+function M.on_menu_save()
+    print('TODO: on_menu_save')
+end
+
+function M.select_menu_item()
+    local idx = vim.fn.line(".")
+    close_menu()
+    M.nav_file(idx)
+end
+
 function M.toggle_menu()
     if menu_id ~= nil and vim.api.nvim_win_is_valid(menu_id) then
-        vim.api.nvim_win_close(menu_id, true)
-        menu_id = nil
-        menu_bufnr = nil
+        close_menu()
         return
     end
 
@@ -54,9 +68,31 @@ function M.toggle_menu()
     -- default keymaps
     vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', 'q', '<Cmd>MarkerToggleMenu<CR>', { silent = true })
     vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<ESC>', '<Cmd>MarkerToggleMenu<CR>', { silent = true })
+    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<CR>', '<Cmd>MarkerSelectItem<CR>', {})
+
+    -- autocommands
+    vim.api.nvim_create_autocmd('BufModifiedSet', {
+        command = 'set nomodified',
+        group = qm.group,
+        buffer = menu_bufnr,
+    })
+    vim.api.nvim_create_autocmd('BufLeave', {
+        callback = function()
+            M.on_menu_save()
+            M.toggle_menu()
+        end,
+        group = qm.group,
+        buffer = menu_bufnr,
+        once = true,
+        nested = true,
+    })
 end
 
--- create a command to toggle the menu
+function M.nav_file(idx)
+    print('TODO: nav_file '..idx)
+end
+
 vim.api.nvim_create_user_command('MarkerToggleMenu', M.toggle_menu, {})
+vim.api.nvim_create_user_command('MarkerSelectItem', M.select_menu_item, {})
 
 return M

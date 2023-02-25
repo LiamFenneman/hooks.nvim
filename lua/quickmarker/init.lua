@@ -14,6 +14,8 @@ local default_config = {
     },
 }
 
+M.group = vim.api.nvim_create_augroup('QUICKMARKER', { clear = true })
+
 -- Merge two tables into a single table. `t1` overrides `t2`.
 -- Source: https://shanekrolikowski.com/blog/love2d-merge-tables/
 local function merge_tbl(t1, t2)
