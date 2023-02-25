@@ -1,7 +1,7 @@
 local popup = require('plenary.popup')
-local qm = require('quickmarker')
-local marks = require('quickmarker.marks')
-local utils = require('quickmarker.utils')
+local h = require('hooks')
+local hooks = require('hooks.marks')
+local utils = require('hooks.utils')
 
 local M = {}
 
@@ -9,15 +9,15 @@ local menu_id = nil
 local menu_bufnr = nil
 
 local function create_window()
-    local config = qm.get_config().menu
+    local config = h.get_config().menu
     local bufnr = vim.api.nvim_create_buf(false, false)
 
     local width = config.width
     local height = config.height
 
     local id = popup.create(bufnr, {
-        title = 'QuickMarker',
-        highlight = 'QuickMarkerWindow',
+        title = 'Hooks',
+        highlight = 'HooksWindow',
         line = math.floor(((vim.o.lines - height) / 2) - 1),
         col = math.floor((vim.o.columns - width) / 2),
         minwidth = width,
@@ -50,7 +50,7 @@ local function get_menu_items()
 end
 
 function M.on_menu_save()
-    marks.set_marks_list(get_menu_items())
+    hooks.set_hooks_list(get_menu_items())
 end
 
 function M.select_menu_item()
@@ -68,26 +68,26 @@ function M.toggle_menu()
     create_window()
 
     local contents = {}
-    for i, mark in ipairs(qm.get_current_project_marks()) do
-        contents[i] = string.format('%s', mark.filename)
+    for i, hook in ipairs(h.get_current_project_hooks()) do
+        contents[i] = string.format('%s', hook.filename)
     end
 
     -- window and buffer set options
     vim.api.nvim_win_set_option(menu_id, 'number', true)
-    vim.api.nvim_buf_set_option(menu_bufnr, 'filetype', 'quickmarker')
+    vim.api.nvim_buf_set_option(menu_bufnr, 'filetype', 'hooks')
     vim.api.nvim_buf_set_option(menu_bufnr, 'buftype', 'acwrite')
     vim.api.nvim_buf_set_option(menu_bufnr, 'bufhidden', 'delete')
     vim.api.nvim_buf_set_lines(menu_bufnr, 0, #contents, false, contents)
 
     -- default keymaps
-    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', 'q', '<Cmd>MarkerToggleMenu<CR>', { silent = true })
-    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<ESC>', '<Cmd>MarkerToggleMenu<CR>', { silent = true })
-    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<CR>', '<Cmd>MarkerSelectItem<CR>', {})
+    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', 'q', '<Cmd>HooksToggleMenu<CR>', { silent = true })
+    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<ESC>', '<Cmd>HooksToggleMenu<CR>', { silent = true })
+    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<CR>', '<Cmd>HooksSelectItem<CR>', {})
 
     -- autocommands
     vim.api.nvim_create_autocmd('BufModifiedSet', {
         command = 'set nomodified',
-        group = qm.group,
+        group = h.group,
         buffer = menu_bufnr,
     })
     vim.api.nvim_create_autocmd('BufLeave', {
@@ -95,7 +95,7 @@ function M.toggle_menu()
             M.on_menu_save()
             M.toggle_menu()
         end,
-        group = qm.group,
+        group = h.group,
         buffer = menu_bufnr,
         once = true,
         nested = true,
@@ -112,26 +112,26 @@ local function get_or_create_buffer(filename)
 end
 
 function M.nav_file(idx)
-    local marks = qm.get_current_project_marks()
+    local hooks = h.get_current_project_hooks()
 
-    -- ensure the index is within the marks array bounds
-    if idx > table.maxn(marks) then
+    -- ensure the index is within the hooks array bounds
+    if idx > table.maxn(hooks) then
         return
     end
 
-    local mark = marks[idx]
-    local filename = vim.fs.normalize(mark.filename)
+    local hook = hooks[idx]
+    local filename = vim.fs.normalize(hook.filename)
     local bufnr = get_or_create_buffer(filename)
     local set_row = not vim.api.nvim_buf_is_loaded(bufnr)
 
     vim.api.nvim_set_current_buf(bufnr)
     vim.api.nvim_buf_set_option(bufnr, 'buflisted', true)
-    if set_row and mark.row and mark.col then
-        vim.fn.cursor({ mark.row, mark.col })
+    if set_row and hook.row and hook.col then
+        vim.fn.cursor({ hook.row, hook.col })
     end
 end
 
-vim.api.nvim_create_user_command('MarkerToggleMenu', M.toggle_menu, {})
-vim.api.nvim_create_user_command('MarkerSelectItem', M.select_menu_item, {})
+vim.api.nvim_create_user_command('HooksToggleMenu', M.toggle_menu, {})
+vim.api.nvim_create_user_command('HooksSelectItem', M.select_menu_item, {})
 
 return M

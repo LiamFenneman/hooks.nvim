@@ -3,7 +3,7 @@ local path = require('plenary.path')
 local M = {}
 local state = {}
 
-local folder_path = vim.fn.stdpath('data') .. '/quickmarker'
+local folder_path = vim.fn.stdpath('data') .. '/hooks'
 local projects_path = string.format('%s/projects.json', folder_path)
 
 local default_config = {
@@ -14,7 +14,7 @@ local default_config = {
     },
 }
 
-M.group = vim.api.nvim_create_augroup('QUICKMARKER', { clear = true })
+M.group = vim.api.nvim_create_augroup('LF_HOOKS', { clear = true })
 
 -- Merge two tables into a single table. `t1` overrides `t2`.
 -- Source: https://shanekrolikowski.com/blog/love2d-merge-tables/
@@ -33,7 +33,7 @@ end
 local function create_project()
     return {
         name = vim.fn.getcwd(),
-        marks = {},
+        hooks = {},
     }
 end
 
@@ -58,7 +58,7 @@ local function load_projects()
         -- add the current project to the state
         local c = create_project()
         state.projects[c.name] = {
-            marks = c.marks,
+            hooks = c.hooks,
         }
 
         -- save projects to disk
@@ -74,20 +74,20 @@ local function load_projects()
     if state.projects[cwd] == nil then
         local c = create_project()
         state.projects[c.name] = {
-            marks = c.marks,
+            hooks = c.hooks,
         }
         M.save_projects()
     end
 end
 
-function M.get_current_project_marks()
+function M.get_current_project_hooks()
     local cwd = vim.fn.getcwd()
-    return state.projects[cwd].marks
+    return state.projects[cwd].hooks
 end
 
-function M.set_current_project_marks(new_marks)
+function M.set_current_project_hooks(new_hooks)
     local cwd = vim.fn.getcwd()
-    state.projects[cwd].marks = new_marks
+    state.projects[cwd].hooks = new_hooks
     M.save_projects()
 end
 
@@ -102,17 +102,17 @@ function M.setup(cfg)
     load_projects()
 end
 
--- Setup quickmarker with default config
+-- Setup with default config
 M.setup()
 
 function M.get_config()
     return state.config
 end
 
--- removes projects that have no marks (exluding the current project)
+-- removes projects that have no hooks (exluding the current project)
 function M.cleanup()
     for k, v in pairs(state.projects) do
-        if v.marks and #v.marks == 0 and k ~= vim.fn.getcwd() then
+        if v.hooks and #v.hooks == 0 and k ~= vim.fn.getcwd() then
             state.projects[k] = nil
         end
     end
@@ -120,6 +120,6 @@ function M.cleanup()
     M.save_projects()
 end
 
-vim.api.nvim_create_user_command('MarkerCleanup', M.cleanup, {})
+vim.api.nvim_create_user_command('HooksCleanup', M.cleanup, {})
 
 return M
