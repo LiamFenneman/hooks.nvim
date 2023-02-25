@@ -38,11 +38,17 @@ function M.toggle_menu()
 
     create_window()
 
+    local contents = {}
+    for i, mark in ipairs(qm.get_current_project_marks()) do
+        contents[i] = string.format('%s', mark.filename, mark.row, mark.col)
+    end
+
     -- window and buffer set options
     vim.api.nvim_win_set_option(menu_id, 'number', true)
     vim.api.nvim_buf_set_option(menu_bufnr, 'filetype', 'quickmarker')
     vim.api.nvim_buf_set_option(menu_bufnr, 'buftype', 'acwrite')
     vim.api.nvim_buf_set_option(menu_bufnr, 'bufhidden', 'delete')
+    vim.api.nvim_buf_set_lines(menu_bufnr, 0, #contents, false, contents)
 
     -- default keymaps
     vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', 'q', '<Cmd>MarkerToggleMenu<CR>', { silent = true })
