@@ -109,4 +109,17 @@ function M.get_config()
     return state.config
 end
 
+-- removes projects that have no marks (exluding the current project)
+function M.cleanup()
+    for k, v in pairs(state.projects) do
+        if v.marks and #v.marks == 0 and k ~= vim.fn.getcwd() then
+            state.projects[k] = nil
+        end
+    end
+
+    M.save_projects()
+end
+
+vim.api.nvim_create_user_command('MarkerCleanup', M.cleanup, {})
+
 return M
