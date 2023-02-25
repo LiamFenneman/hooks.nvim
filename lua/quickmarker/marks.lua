@@ -1,4 +1,3 @@
-local path = require('plenary.path')
 local qm = require('quickmarker')
 local utils = require('quickmarker.utils')
 
@@ -42,6 +41,24 @@ function M.add_file()
 
     -- save the projects to disk
     qm.save_projects()
+end
+
+function M.set_marks_list(new_marks)
+    local marks = qm.get_current_project_marks()
+    -- loop over the new marks, get the mark from the file or create a new mark
+    -- update the new list inplace with the mark
+    for k, v in pairs(new_marks) do
+        if type(v) == 'string' then
+            local mark = marks[v]
+            if not mark then
+                mark = create_mark(v)
+            end
+            new_marks[k] = mark
+        end
+    end
+
+    -- set the project marks to the new list
+    qm.set_current_project_marks(new_marks)
 end
 
 return M

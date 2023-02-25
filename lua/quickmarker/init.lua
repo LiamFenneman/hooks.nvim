@@ -85,6 +85,12 @@ function M.get_current_project_marks()
     return state.projects[cwd].marks
 end
 
+function M.set_current_project_marks(new_marks)
+    local cwd = vim.fn.getcwd()
+    state.projects[cwd].marks = new_marks
+    M.save_projects()
+end
+
 -- Setup the config for the plugin
 function M.setup(cfg)
     cfg = cfg or {}

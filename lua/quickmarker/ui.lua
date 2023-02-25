@@ -1,5 +1,6 @@
 local popup = require('plenary.popup')
 local qm = require('quickmarker')
+local marks = require('quickmarker.marks')
 local utils = require('quickmarker.utils')
 
 local M = {}
@@ -35,8 +36,21 @@ local function close_menu()
     menu_bufnr = nil
 end
 
+local function get_menu_items()
+    local lines = vim.api.nvim_buf_get_lines(menu_bufnr, 0, -1, true)
+    local indices = {}
+
+    for _, line in pairs(lines) do
+        if not utils.is_white_space(line) then
+            table.insert(indices, line)
+        end
+    end
+
+    return indices
+end
+
 function M.on_menu_save()
-    print('TODO: on_menu_save')
+    marks.set_marks_list(get_menu_items())
 end
 
 function M.select_menu_item()
