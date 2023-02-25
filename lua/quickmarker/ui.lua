@@ -55,7 +55,7 @@ function M.toggle_menu()
 
     local contents = {}
     for i, mark in ipairs(qm.get_current_project_marks()) do
-        contents[i] = string.format('%s', mark.filename, mark.row, mark.col)
+        contents[i] = string.format('%s', mark.filename)
     end
 
     -- window and buffer set options
@@ -88,8 +88,33 @@ function M.toggle_menu()
     })
 end
 
+local function get_or_create_buffer(filename)
+    local buf_exists = vim.fn.bufexists(filename) ~= 0
+    if buf_exists then
+        return vim.fn.bufnr(filename)
+    end
+
+    return vim.fn.bufadd(filename)
+end
+
 function M.nav_file(idx)
-    print('TODO: nav_file '..idx)
+    local marks = qm.get_current_project_marks()
+
+    -- ensure the index is within the marks array bounds
+    if idx > table.maxn(marks) then
+        return
+    end
+
+    local mark = marks[idx]
+    local filename = vim.fs.normalize(mark.filename)
+    local bufnr = get_or_create_buffer(filename)
+    local set_row = not vim.api.nvim_buf_is_loaded(bufnr)
+
+    vim.api.nvim_set_current_buf(bufnr)
+    vim.api.nvim_buf_set_option(bufnr, 'buflisted', true)
+    if set_row and mark.row and mark.col then
+        vim.fn.cursor({ mark.row, mark.col })
+    end
 end
 
 vim.api.nvim_create_user_command('MarkerToggleMenu', M.toggle_menu, {})
