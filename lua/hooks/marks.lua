@@ -61,4 +61,6 @@ function M.set_hooks_list(new_hooks)
     cfg.set_current_project_hooks(new_hooks)
 end
 
+vim.api.nvim_create_user_command('HooksAddFile', M.add_file, {})
+
 return M

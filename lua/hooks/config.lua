@@ -110,6 +110,15 @@ function M.setup(cfg)
 
     -- load project from disk
     load_projects()
+
+    -- setup keymaps
+    local maps = state.config.mappings
+    vim.keymap.set({ 'n', 'v' }, maps.add_file, '<CMD>HooksAddFile<CR>', { desc = '[A]dd hook' })
+    vim.keymap.set({ 'n', 'v' }, maps.toggle_menu, '<CMD>HooksToggleMenu<CR>', { desc = 'Toggle hooks menu' })
+    for i, v in ipairs(maps.nav_file) do
+        -- vim.keymap.set({ 'n', 'v' }, v, string.format('<CMD>HooksNavFile %s<CR>', i), { desc = string.format('Go to hook [%s]', i) })
+        vim.keymap.set({ 'n', 'v' }, v, function() h.nav_file(i) end, { desc = string.format('Go to hook [%s]', i) })
+    end
 end
 
 -- Setup with default config
