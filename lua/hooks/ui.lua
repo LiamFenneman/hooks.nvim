@@ -2,6 +2,7 @@ local popup = require('plenary.popup')
 local utils = require('hooks.utils')
 
 local UI = {}
+local group = vim.api.nvim_create_augroup('LF_HOOKS', { clear = true })
 
 -- user interface state
 UI.menu = {
@@ -85,12 +86,12 @@ function UI.toggle_menu(cfg, hooks, on_save)
             -- UI.on_menu_save()
             on_save()
         end,
-        group = cfg.group,
+        group = group,
         buffer = UI.menu.bufnr,
     })
     vim.api.nvim_create_autocmd('BufModifiedSet', {
         command = 'set nomodified',
-        group = cfg.group,
+        group = group,
         buffer = UI.menu.bufnr,
     })
     vim.api.nvim_create_autocmd('BufLeave', {
@@ -99,7 +100,7 @@ function UI.toggle_menu(cfg, hooks, on_save)
             on_save()
             UI.close_menu()
         end,
-        group = cfg.group,
+        group = group,
         buffer = UI.menu.bufnr,
         once = true,
         nested = true,
