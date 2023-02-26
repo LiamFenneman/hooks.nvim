@@ -29,6 +29,7 @@ use {
 ## Quick Configuration
 
 ```lua
+-- nvim/after/plugin/hooks.lua
 require('hooks').setup({})
 ```
 
