@@ -4,7 +4,6 @@ local ui = require('hooks.ui')
 
 local M = {}
 local state = {}
-M.group = vim.api.nvim_create_augroup('LF_HOOKS', { clear = true })
 
 local folder_path = vim.fn.stdpath('data') .. '/hooks'
 local projects_path = string.format('%s/projects.json', folder_path)
