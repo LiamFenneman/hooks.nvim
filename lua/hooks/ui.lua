@@ -1,15 +1,17 @@
 local popup = require('plenary.popup')
-local cfg = require('hooks.config')
-local marks = require('hooks.marks')
 local utils = require('hooks.utils')
 
-local M = {}
+local UI = {}
 
-local menu_id = nil
-local menu_bufnr = nil
+-- user interface state
+UI.menu = {
+    id = nil,
+    bufnr = nil,
+}
 
-local function create_window()
-    local config = cfg.get_config().menu
+--- Creates a popup menu.
+function UI.create_menu(cfg)
+    local config = cfg.menu
     local bufnr = vim.api.nvim_create_buf(false, true)
 
     local width = config.width
@@ -26,18 +28,20 @@ local function create_window()
         borderchars = config.border_chars,
     })
 
-    menu_id = id
-    menu_bufnr = bufnr
+    UI.menu.id = id
+    UI.menu.bufnr = bufnr
 end
 
-local function close_menu()
-    vim.api.nvim_win_close(menu_id, true)
-    menu_id = nil
-    menu_bufnr = nil
+--- Closes the popup menu.
+function UI.close_menu()
+    vim.api.nvim_win_close(UI.menu.id, true)
+    UI.menu.id = nil
+    UI.menu.bufnr = nil
 end
 
-local function get_menu_items()
-    local lines = vim.api.nvim_buf_get_lines(menu_bufnr, 0, -1, true)
+--- Returns a list of lines from the menu.
+function UI.get_menu_items()
+    local lines = vim.api.nvim_buf_get_lines(UI.menu.bufnr, 0, -1, true)
     local indices = {}
 
     for _, line in pairs(lines) do
@@ -49,66 +53,60 @@ local function get_menu_items()
     return indices
 end
 
-function M.on_menu_save()
-    marks.set_hooks_list(get_menu_items())
-end
-
-function M.select_menu_item()
-    local idx = vim.fn.line('.')
-    close_menu()
-    M.nav_file(idx)
-end
-
-function M.toggle_menu()
-    if menu_id ~= nil and vim.api.nvim_win_is_valid(menu_id) then
-        close_menu()
+--- Toggles the popup menu.
+function UI.toggle_menu(cfg, hooks, on_save)
+    if UI.menu.id ~= nil and vim.api.nvim_win_is_valid(UI.menu.id) then
+        UI.close_menu()
         return
     end
 
-    create_window()
+    UI.create_menu(cfg)
 
     local contents = {}
-    for i, hook in ipairs(cfg.get_current_project_hooks()) do
+    for i, hook in ipairs(hooks) do
         contents[i] = string.format('%s', hook.filename)
     end
 
     -- window and buffer set options
-    vim.api.nvim_win_set_option(menu_id, 'number', true)
-    vim.api.nvim_buf_set_option(menu_bufnr, 'filetype', 'hooks')
-    vim.api.nvim_buf_set_option(menu_bufnr, 'buftype', 'acwrite')
-    vim.api.nvim_buf_set_option(menu_bufnr, 'bufhidden', 'delete')
-    vim.api.nvim_buf_set_lines(menu_bufnr, 0, #contents, false, contents)
+    vim.api.nvim_win_set_option(UI.menu.id, 'number', true)
+    vim.api.nvim_buf_set_option(UI.menu.bufnr, 'filetype', 'hooks')
+    vim.api.nvim_buf_set_option(UI.menu.bufnr, 'buftype', 'acwrite')
+    vim.api.nvim_buf_set_option(UI.menu.bufnr, 'bufhidden', 'delete')
+    vim.api.nvim_buf_set_lines(UI.menu.bufnr, 0, #contents, false, contents)
 
     -- default keymaps
-    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', 'q', '<Cmd>HooksToggleMenu<CR>', { silent = true })
-    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<ESC>', '<Cmd>HooksToggleMenu<CR>', { silent = true })
-    vim.api.nvim_buf_set_keymap(menu_bufnr, 'n', '<CR>', '<Cmd>HooksSelectItem<CR>', {})
+    vim.api.nvim_buf_set_keymap(UI.menu.bufnr, 'n', 'q', '<Cmd>HooksToggleMenu<CR>', { silent = true })
+    vim.api.nvim_buf_set_keymap(UI.menu.bufnr, 'n', '<ESC>', '<Cmd>HooksToggleMenu<CR>', { silent = true })
+    vim.api.nvim_buf_set_keymap(UI.menu.bufnr, 'n', '<CR>', '<Cmd>HooksSelectItem<CR>', {})
 
     -- autocommands
     vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
         callback = function()
-            M.on_menu_save()
+            -- UI.on_menu_save()
+            on_save()
         end,
         group = cfg.group,
-        buffer = menu_bufnr,
+        buffer = UI.menu.bufnr,
     })
     vim.api.nvim_create_autocmd('BufModifiedSet', {
         command = 'set nomodified',
         group = cfg.group,
-        buffer = menu_bufnr,
+        buffer = UI.menu.bufnr,
     })
     vim.api.nvim_create_autocmd('BufLeave', {
         callback = function()
-            M.on_menu_save()
-            M.toggle_menu()
+            -- UI.on_menu_save()
+            on_save()
+            UI.close_menu()
         end,
         group = cfg.group,
-        buffer = menu_bufnr,
+        buffer = UI.menu.bufnr,
         once = true,
         nested = true,
     })
 end
 
+--- Returns a buffer number after retriving an existing buffer or creating a new one.
 local function get_or_create_buffer(filename)
     local buf_exists = vim.fn.bufexists(filename) ~= 0
     if buf_exists then
@@ -118,9 +116,8 @@ local function get_or_create_buffer(filename)
     return vim.fn.bufadd(filename)
 end
 
-function M.nav_file(idx)
-    local hooks = cfg.get_current_project_hooks()
-
+--- Navigates to a file from the list of hooks.
+function UI.nav_file(idx, hooks)
     -- ensure the index is within the hooks array bounds
     if idx > table.maxn(hooks) then
         return
@@ -138,7 +135,4 @@ function M.nav_file(idx)
     end
 end
 
-vim.api.nvim_create_user_command('HooksToggleMenu', M.toggle_menu, {})
-vim.api.nvim_create_user_command('HooksSelectItem', M.select_menu_item, {})
-
-return M
+return UI
