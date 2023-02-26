@@ -29,19 +29,28 @@ use {
 ## Quick Configuration
 
 ```lua
--- nvim/after/plugin/hooks.lua
 require('hooks').setup({})
-local ui = require('hooks.ui')
-vim.keymap.set({ 'n', 'v' }, '<leader>a', require('hooks.marks').add_file, { desc = '[A]dd hook' })
-vim.keymap.set({ 'n', 'v' }, '<leader>e', ui.toggle_menu, { desc = 'Toggle hook menu' })
-vim.keymap.set({ 'n', 'v' }, '<leader>1', function() ui.nav_file(1) end, { desc = 'Go to hook [1]' })
-vim.keymap.set({ 'n', 'v' }, '<leader>2', function() ui.nav_file(2) end, { desc = 'Go to hook [2]' })
-vim.keymap.set({ 'n', 'v' }, '<leader>3', function() ui.nav_file(3) end, { desc = 'Go to hook [3]' })
-vim.keymap.set({ 'n', 'v' }, '<leader>4', function() ui.nav_file(4) end, { desc = 'Go to hook [4]' })
 ```
 
-## Modules
-- `hooks`
-- `hooks.ui`
-- `hooks.marks`
-- `hooks.utils`
+## Default Configuration
+
+```lua
+-- nvim/after/plugin/hooks.lua
+require('hooks').setup({
+    menu = {
+        width = 60,
+        height = 10,
+        border_chars = { '─', '│', '─', '│', '╭', '╮', '╯', '╰' },
+    },
+    mappings = {
+        add_file = '<leader>a',
+        toggle_menu = '<leader>e',
+        nav_file = {
+            [1] = '<leader>1',
+            [2] = '<leader>2',
+            [3] = '<leader>3',
+            [4] = '<leader>4',
+        },
+    },
+})
+```
